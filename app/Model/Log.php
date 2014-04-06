@@ -83,7 +83,7 @@ class Log extends AppModel {
 		{
 			return true;
 		}
-		
+		return false;
 	}
 
 

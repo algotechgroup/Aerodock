@@ -23,49 +23,34 @@ class FlightsController extends AppController {
 			$data = $this->request->data;
 			$csvData = $data['Flight']['csvPath'];
 			unset($data['Flight']['csvPath']);
-			$this->Flight->set('aircraft', "Diamond DA 40");
 			$this->Flight->set('instructorID', $this->Auth->user('username'));
-
 			if($this->Flight->save($data)) {
-
-				$loadCSVArray = $this->Flight->uploadFile($csvData, $this->Flight->id);
-				$this->Flight->set('duration', $loadCSVArray['duration']);
-				$this->Flight->save();
-
+				$this->Flight->uploadFile($csvData, $this->Flight->id);
 				$this->Session->setFlash(__('Your post has been saved.'));
 				return $this->redirect(
 					array('controller' => 'flights', 'action' => 'view', $this->Flight->id)
 					);
 			}
-			$this->Session->setFlash('Unable to add your post.', 'default', array(), 'danger');
+			$this->Session->setFlash(__('Unable to add your post.'));
 		}
 	}
 
 	public function delete($id)
 	{
-		ClassRegistry::init('Log');
-		$log = new Log();
-
+		
 		if( $this->request->is('get') )
 		{
-			$this->Session->setFlash('You can not delete flights.', 'default', array(), 'danger');
-			return $this->redirect(array('action' => 'index'));
+			throw new MethodNotAllowedException();
 		}
 		
-		if($this->Auth->user('type') == 'admin')
+		if($this->Auth->user('type') == 'admin' && $this->Flight->deleteFlight($id) )
 		{
-			if($this->Flight->delete($id) && $log->deleteLog($id))
-			{
-				$this->Session->setFlash('The flight has been deleted', 'default', array(), 'success');
-			}
-			else
-			{
-				$this->Session->setFlash('Attempt to delete flight failed.', 'default', array(), 'danger');
-			}
+			$this->Session->setFlash('The Flight has been deleted.', 'default',array(),'success');
 		} 	
 		else
 		{
-			$this->Session->SetFlash('Only an Administrator may delete flights.', 'default', array(), 'danger');
+			$this->Session->SetFlash('Faild to delete flight. Please, try again.',
+				'default',array(),'danger');
 
 		}
 		return $this->redirect(array('contoller' => 'flights', 'action' => 'index'));
@@ -83,7 +68,7 @@ class FlightsController extends AppController {
 		}	
 		if($flight['Flight']['studentid'] != $this->Auth->user('username') && 
 				$this->Auth->user('type') == 'student' ){
-			$this->Session->setFlash('Not authorized to view this flight.','default', array(), 'danger');
+			$this->Session->setFlash(__('Not authorized to view this flight.'));
 			return $this->redirect(
 					array('controller' => 'flights', 'action' => 'index'));
 		}

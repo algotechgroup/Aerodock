@@ -8,7 +8,7 @@ class UsersController extends AppController {
       if ($this->Auth->login()) {
         return $this->redirect(array('controller' => 'flights', 'action' => 'index'));
       }
-      $this->Session->setFlash('Invalid username or password, try again', 'default', array(), 'bad');
+      $this->Session->setFlash(__('Invalid username or password, try again'));
     }
   }
 
@@ -20,30 +20,35 @@ class UsersController extends AppController {
       unset($data['User']['csvPath']);
       if($this->User->uploadUsers($csvData))
       {
-        $this->Session->setFlash(__('New users file submitted.'));
-        return $this->redirect(
-          array('conroller' => 'users', 'action' => 'index'));
+        $this->Session->setFlash('New users file submitted.','default',array(),'success');
+        
       }
-      $this->Session->setFlash(__('Unable to add new users.'));
+      else
+      {
+        $this->Session->setFlash('Unable to add new users.','default',array(),'danger');
+      }
+      return $this->redirect(array('conroller' => 'users', 'action' => 'index'));
     }
+    
 
   }
 
   public function delete($id) 
   {
 
-    ClassRegistry::init('User');
-    $user = new User();
-    $user->delete($id);
- 
     if($this->request->is('get'))
     {
       throw new MethodNotAllowedException();
     }
-    if($this->Auth->user('type') == "admin")
+    if($this->Auth->user('type') == 'admin' && $this->User->deleteUser($id))
     {
-      $user->delete($id);
+      $this->Session->setFlash(__('User Deleted.'));
     }
+    else
+    {
+      $this->Session->setFlash(__('Failed to delete user.'));
+    }
+    return $this->redirect(array('conroller'=> 'users', 'action' => 'index'));
 
   }
 

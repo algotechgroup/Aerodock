@@ -27,12 +27,20 @@ class Flight extends AppModel {
 			return false;
 		}
 		
-		$loadCSVArray = $log->loadCSV($uploadData, $id);
-
-		if($loadCSVArray['return']){
-			return $loadCSVArray;
+		if($log->loadCSV($uploadData, $id)){
+			return true;
 		}
 
+		return false;
+	}
+
+	public function deleteFlight($id){
+		ClassRegistry::init('Log');
+		$log = new Log();
+		if($this->delete($id) && $log->deleteLog($id))
+		{
+			return true;
+		}
 		return false;
 	}
 
@@ -59,11 +67,10 @@ class Flight extends AppModel {
 		$pageNum = 1;
 		$flightInfo = $log->find('all', array(
 			'conditions' => array('Log.flight_id' => $flight_id),
-			'fields' => array('Log.Latitude', 'Log.Longitude', 'Log.AltMSL', 'Log.IAS', 'CHT1', 'RPM','TRK','Time','AltGPS','Pitch', 'Roll'),
+			'fields' => array('Log.Latitude', 'Log.Longitude', 'Log.AltMSL', 'Log.IAS', 'CHT1', 'RPM','TRK','Time'),
 			'limit' => 1));
 
 		$index = 0;
-
 		$latLongArray['lat'][$index] = $flightInfo[0]['Log']['Latitude'];
 		$latLongArray['long'][$index] = $flightInfo[0]['Log']['Longitude'];
 		$altitude[$index] = $flightInfo[0]['Log']['AltMSL'];
@@ -77,24 +84,10 @@ class Flight extends AppModel {
 		$minLat = $maxLat;
 		$maxLong = $latLongArray['long'][$index];
 		$minLong = $maxLong;
-/*
-		$altFile = new File('benstuff.txt');
-		$altFile->create();
 
-		$alt1 = "";
-		$alt2 = "";
-		$pitchstring = ""; 
-		$rollstring = "";
-		*/
 		// While there is still data to return...
 		while(count($flightInfo) != 0){
 			for($j=0; $j < count($flightInfo); $j++){
-				/*
-				$alt1 .= "\n".$flightInfo[$j]['Log']['AltMSL'];
-				$alt2 .= "\n".$flightInfo[$j]['Log']['AltGPS'];
-				$pitchstring .= "\n" .$flightInfo[$j]['Log']['Pitch'];
-				$rollstring .= "\n" .$flightInfo[$j]['Log']['Roll'];
-*/
 				$latLongArray['lat'][$index]  = $flightInfo[$j]['Log']['Latitude'];
 				$latLongArray['long'][$index] = $flightInfo[$j]['Log']['Longitude'];
 				$altitude[$index]   = $flightInfo[$j]['Log']['AltMSL'];
@@ -120,21 +113,12 @@ class Flight extends AppModel {
 			}
 			$flightInfo = $log->find('all', array(
 				'conditions' => array('Log.flight_id' => $flight_id),
-				'fields' => array('Log.Latitude', 'Log.Longitude', 'Log.AltMSL', 'Log.IAS', 'CHT1', 'RPM','TRK','Time', 'AltGPS','Pitch', 'Roll'),
+				'fields' => array('Log.Latitude', 'Log.Longitude', 'Log.AltMSL', 'Log.IAS', 'CHT1', 'RPM','TRK','Time'),
 				'limit' => 500,
 				'page' => $pageNum));
 			$pageNum++;
 		}
-		/*
-		$altFile->write("AltMSL\n");
-		$altFile->write($alt1);
-		$altFile->write("\n\n\n\nAltGPS\n");
-		$altFile->write($alt2);
-		$altFile->write("\n\n\n\nPitch:\n");
-		$altFile->write($pitchstring);
-		$altFile->write("\n\n\n\nRoll:\n");
-		$altFile->write($rollstring);
-		*/
+
 		// Store that data in the array.
 
 		$center = array('lat' => ($maxLat + $minLat)/2,
@@ -176,16 +160,24 @@ class Flight extends AppModel {
 		$engineString = "var engine = [";
 		$trackingString = "var tracking = [";
 		for($i=0; $i<count($altitude); $i++){
-			$altitudeFile->write( "[\"".$timestamp[$i]."\",".
-														$altitude[$i].",\"Altitude: ".$altitude[$i]." Airspeed: ".$airspeed[$i]."\",".
-														$airspeed[$i].",\"Altitude: ".$altitude[$i]." Airspeed: ".$airspeed[$i]."\"],");
+			$altitudeFile->write( "[new Date(2013,0,0,".
+														substr($timestamp[$i], 0,2).",".
+														substr($timestamp[$i], 3,2).",".
+														substr($timestamp[$i], 6,2).",0),".
+														$altitude[$i].",".$airspeed[$i]."],");
 			$latLongFile->write( "new google.maps.LatLng(" . 
 														$latLongArray['lat'][$i] . "," . 
 														$latLongArray['long'][$i] . "),");
-			$engineString .= "[\"".$timestamp[$i]."\",".
+			$engineString .= "[new Date(2013,0,0,".
+														substr($timestamp[$i], 0,2).",".
+														substr($timestamp[$i], 3,2).",".
+														substr($timestamp[$i], 6,2).",0),".
 														$engineTemp[$i].",".$engineRPM[$i]."],";
-			$trackingString .= "[\"" .$timestamp[$i]."\",".
-														$tracking[$i]."],\n";
+			$trackingString .= "[new Date(2013,0,0,".
+														substr($timestamp[$i], 0,2).",".
+														substr($timestamp[$i], 3,2).",".
+														substr($timestamp[$i], 6,2).",0),".
+														$tracking[$i]."],";
 		}
 		$altitudeFile->write( "];");
 		$latLongFile->write( "];");

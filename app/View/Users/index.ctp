@@ -3,7 +3,7 @@
 				 echo "All users:"; 
 			else 
 				echo "All students:"; ?></h1>
-<?php if(Authcomponent::user('type') != 'teacher'){
+<?php if(Authcomponent::user('type') == 'admin'){
 	echo $this->Html->link(
 		'Add user',
 		array('controller' => 'users', 'action' => 'add'));
@@ -17,7 +17,13 @@
 		<th>Type</th>
 		<?php endif ?>
 		<th>Edit</th>
-		<th>Delete</th>
+		<th><?php 
+			if(Authcomponent::user('type') == 'admin')
+			{
+				echo "Delete";
+			}
+			?>
+		</th>
 	</tr>
 	<?php foreach ($users as $user): ?>
 	<tr>
@@ -31,11 +37,14 @@
 			'Edit User',
 			array('controller' => 'users', 'action' => 'edit', $user['User']['id']));
 			?></td>
-		<td><?php echo $this->Form->postLink(
-			'Delete User',
-			array('controller' => 'users', 'action' => 'delete', $user['User']['id']),
-			array('confirm' => 'Are you sure?'));
-			?>
+		<td><?php
+			if(Authcomponent::user('type') == 'admin')
+			{
+				 echo $this->Form->postLink(
+				 'Delete User',
+				 array('controller' => 'users', 'action' => 'delete', $user['User']['id']),
+				 array('confirm' => 'Are you sure?'));
+			}?>
 		</td>
 	</tr>
 	<?php endforeach; ?>
