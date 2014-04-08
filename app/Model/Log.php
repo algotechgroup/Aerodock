@@ -29,6 +29,7 @@ public function loadCSV($uploadFile, $flightId){
 		$lastFlightTime = "";
 
 		$data = array();
+		$setMaintFlag = false;
 		while($row = fgetcsv($handle)) {
 			if($index == 0)
 			{
@@ -42,13 +43,53 @@ public function loadCSV($uploadFile, $flightId){
 				}
 				$row = array_combine($header, $row);
 
-
-
 				$lastFlightTime = $row['Time'];
 
-
-
-				$row['flight_id'] = $flightId;
+        //check for engine maintenance issues
+        if (!setMaintFlag)
+        {
+          $avgEGT = ($row['EGT1'] + $row['EGT2'] + $row['EGT3'] + $row['EGT4'])/4;
+          if (abs($avgEGT - $row['EGT1'])/$avgEGT >= .1)
+          {
+            $setMaintFlag = true;
+          }
+          else if (abs($avgEGT - $row['EGT2'])/$avgEGT >= .1)
+          {
+            $setMaintFlag = true;
+          }
+          else if (abs($avgEGT - $row['EGT3'])/$avgEGT >= .1)
+          {
+            $setMaintFlag = true;
+          }
+          else if (abs($avgEGT - $row['EGT4'])/$avgEGT >= .1)
+          {
+            $setMaintFlag = true;
+          }
+        }
+        
+        if (!$setMaintFlag)
+        {
+          $avgCHT = ($row['CHT1'] + $row['CHT2'] + $row['CHT3'] + $row['CHT4'])/4;
+        
+          if ( abs($avgCHT - $row['CHT1'])/$avgCHT >= .1)
+          {
+            $setMaintFlag = true;
+          }
+          else if (abs($avgCHT - $row['CHT2'])/$avgCHT >= .1)
+          {
+            $setMaintFlag = true;
+          }
+          else if (abs($avgCHT - $row['CHT3'])/$avgCHT >= .1)
+          {
+            $setMaintFlag = true;
+          }
+          else if (abs($avgCHT - $row['CHT4'])/$avgCHT >= .1)
+          {
+            $setMaintFlag = true;
+          }
+        }
+          
+        $row['flight_id'] = $flightId;
 				$data[$index] = $row;
 				$index++;
 			}
@@ -70,12 +111,13 @@ public function loadCSV($uploadFile, $flightId){
 		$end = strtotime($lastFlightTime);
 
 		$delta = $end - $start;
-
+    
 		return array("return" => true,
 								 "duration" => $delta,
 								 "date" => $date, 
 								 "tailNo" => $tailNumber, 
-								 "aircraft" => $aircraft);
+								 "aircraft" => $aircraft,
+								 "maintenance" => $setMaintFlag);
 	}
 
 	public function deleteLog($id)
