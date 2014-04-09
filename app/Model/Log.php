@@ -30,6 +30,7 @@ public function loadCSV($uploadFile, $flightId){
 
 		$data = array();
 		$setMaintFlag = false;
+		$setAdminFlag = false;
 		while($row = fgetcsv($handle)) {
 			if($index == 0)
 			{
@@ -88,6 +89,23 @@ public function loadCSV($uploadFile, $flightId){
             $setMaintFlag = true;
           }
         }
+        
+        
+        
+        //check for admin issues
+        if (!$setAdminFlag)
+        {
+          if (abs($row['Roll']) >62)
+          {
+            $setAdminFlag = true;
+          }
+          if (abs($row['Pitch']) > 35)
+          {
+            $setAdminFlag = true;
+          }
+        }
+        
+   
           
         $row['flight_id'] = $flightId;
 				$data[$index] = $row;
@@ -102,6 +120,15 @@ public function loadCSV($uploadFile, $flightId){
 			}
 
 		}
+		$flags = 0;
+    if($setMaintFlag)
+    {
+       $flags += 1;
+    }
+    if($setAdminFlag)
+    {
+       $flags += 2;
+    }
 
 		$this->create();
 		$this->saveMany($data);
@@ -117,7 +144,7 @@ public function loadCSV($uploadFile, $flightId){
 								 "date" => $date, 
 								 "tailNo" => $tailNumber, 
 								 "aircraft" => $aircraft,
-								 "maintenance" => $setMaintFlag);
+								 "maintenance" => $flags);
 	}
 
 	public function deleteLog($id)
