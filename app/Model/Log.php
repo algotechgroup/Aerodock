@@ -47,7 +47,7 @@ public function loadCSV($uploadFile, $flightId){
 				$lastFlightTime = $row['Time'];
 
         //check for engine maintenance issues
-        if (!setMaintFlag)
+        if (!$setMaintFlag)
         {
           $avgEGT = ($row['EGT1'] + $row['EGT2'] + $row['EGT3'] + $row['EGT4'])/4;
           if (abs($avgEGT - $row['EGT1'])/$avgEGT >= .1)
