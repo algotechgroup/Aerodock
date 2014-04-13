@@ -47,7 +47,7 @@ public function loadCSV($uploadFile, $flightId){
 				$lastFlightTime = $row['Time'];
 
         //check for engine maintenance issues
-        if (!$setMaintFlag)
+        /*if (!$setMaintFlag)
         {
           $avgEGT = ($row['EGT1'] + $row['EGT2'] + $row['EGT3'] + $row['EGT4'])/4;
           if (abs($avgEGT - $row['EGT1'])/$avgEGT >= .1)
@@ -67,24 +67,24 @@ public function loadCSV($uploadFile, $flightId){
             $setMaintFlag = true;
           }
         }
-        
+        */
         if (!$setMaintFlag)
         {
-          $avgCHT = ($row['CHT1'] + $row['CHT2'] + $row['CHT3'] + $row['CHT4'])/4;
+          //$avgCHT = ($row['CHT1'] + $row['CHT2'] + $row['CHT3'] + $row['CHT4'])/4;
         
-          if ( abs($avgCHT - $row['CHT1'])/$avgCHT >= .1)
+          if ( $row['CHT1']) > 500)
           {
             $setMaintFlag = true;
           }
-          else if (abs($avgCHT - $row['CHT2'])/$avgCHT >= .1)
+          else if ( $row['CHT2']) > 500)
           {
             $setMaintFlag = true;
           }
-          else if (abs($avgCHT - $row['CHT3'])/$avgCHT >= .1)
+          else if ( $row['CHT3']) > 500)
           {
             $setMaintFlag = true;
           }
-          else if (abs($avgCHT - $row['CHT4'])/$avgCHT >= .1)
+          else if ( $row['CHT4']) > 500)
           {
             $setMaintFlag = true;
           }
