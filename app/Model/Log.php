@@ -29,6 +29,8 @@ public function loadCSV($uploadFile, $flightId){
 		$lastFlightTime = "";
 
 		$data = array();
+		$setMaintFlag = false;
+		$setAdminFlag = false;
 		while($row = fgetcsv($handle)) {
 			if($index == 0)
 			{
@@ -42,13 +44,70 @@ public function loadCSV($uploadFile, $flightId){
 				}
 				$row = array_combine($header, $row);
 
-
-
 				$lastFlightTime = $row['Time'];
 
-
-
-				$row['flight_id'] = $flightId;
+        //check for engine maintenance issues
+        /*if (!$setMaintFlag)
+        {
+          $avgEGT = ($row['EGT1'] + $row['EGT2'] + $row['EGT3'] + $row['EGT4'])/4;
+          if (abs($avgEGT - $row['EGT1'])/$avgEGT >= .1)
+          {
+            $setMaintFlag = true;
+          }
+          else if (abs($avgEGT - $row['EGT2'])/$avgEGT >= .1)
+          {
+            $setMaintFlag = true;
+          }
+          else if (abs($avgEGT - $row['EGT3'])/$avgEGT >= .1)
+          {
+            $setMaintFlag = true;
+          }
+          else if (abs($avgEGT - $row['EGT4'])/$avgEGT >= .1)
+          {
+            $setMaintFlag = true;
+          }
+        }
+        */
+        if (!$setMaintFlag)
+        {
+          //$avgCHT = ($row['CHT1'] + $row['CHT2'] + $row['CHT3'] + $row['CHT4'])/4;
+        
+          if ( $row['CHT1']) > 500)
+          {
+            $setMaintFlag = true;
+          }
+          else if ( $row['CHT2']) > 500)
+          {
+            $setMaintFlag = true;
+          }
+          else if ( $row['CHT3']) > 500)
+          {
+            $setMaintFlag = true;
+          }
+          else if ( $row['CHT4']) > 500)
+          {
+            $setMaintFlag = true;
+          }
+        }
+        
+        
+        
+        //check for admin issues
+        if (!$setAdminFlag)
+        {
+          if (abs($row['Roll']) >62)
+          {
+            $setAdminFlag = true;
+          }
+          if (abs($row['Pitch']) > 35)
+          {
+            $setAdminFlag = true;
+          }
+        }
+        
+   
+          
+        $row['flight_id'] = $flightId;
 				$data[$index] = $row;
 				$index++;
 			}
@@ -61,6 +120,15 @@ public function loadCSV($uploadFile, $flightId){
 			}
 
 		}
+		$flags = 0;
+    if($setMaintFlag)
+    {
+       $flags += 1;
+    }
+    if($setAdminFlag)
+    {
+       $flags += 2;
+    }
 
 		$this->create();
 		$this->saveMany($data);
@@ -70,12 +138,13 @@ public function loadCSV($uploadFile, $flightId){
 		$end = strtotime($lastFlightTime);
 
 		$delta = $end - $start;
-
+    
 		return array("return" => true,
 								 "duration" => $delta,
 								 "date" => $date, 
 								 "tailNo" => $tailNumber, 
-								 "aircraft" => $aircraft);
+								 "aircraft" => $aircraft,
+								 "maintenance" => $flags);
 	}
 
 	public function deleteLog($id)

@@ -67,7 +67,7 @@ class Flight extends AppModel {
 		$pageNum = 1;
 		$flightInfo = $log->find('all', array(
 			'conditions' => array('Log.flight_id' => $flight_id),
-			'fields' => array('Log.Latitude', 'Log.Longitude', 'Log.AltMSL', 'Log.IAS', 'CHT1', 'RPM','TRK','Time','AltGPS','Pitch', 'Roll'),
+			'fields' => array('Log.Latitude', 'Log.Longitude', 'Log.AltMSL', 'Log.IAS', 'RPM', 'CHT1','TRK','Time','AltGPS','Pitch', 'Roll'),
 			'limit' => 1));
 
 		$index = 0;
@@ -76,8 +76,8 @@ class Flight extends AppModel {
 		$latLongArray['long'][$index] = $flightInfo[0]['Log']['Longitude'];
 		$altitude[$index] = $flightInfo[0]['Log']['AltMSL'];
 		$airspeed[$index] = $flightInfo[0]['Log']['IAS'];
-		$engineRPM[$index] = $flightInfo[0]['Log']['CHT1'];
-		$engineTemp[$index] = $flightInfo[0]['Log']['RPM'];
+		$engineRPM[$index] = $flightInfo[0]['Log']['RPM'];
+		$engineTemp[$index] = $flightInfo[0]['Log']['CHT1'];
 		$tracking[$index] = $flightInfo[0]['Log']['TRK'];
 
 		$timestamp[$index] = $flightInfo[0]['Log']['Time'];
@@ -108,8 +108,8 @@ class Flight extends AppModel {
 				$latLongArray['long'][$index] = $flightInfo[$j]['Log']['Longitude'];
 				$altitude[$index]   = $flightInfo[$j]['Log']['AltMSL'];
 				$airspeed[$index]   = $flightInfo[$j]['Log']['IAS'];
-				$engineRPM[$index]  = $flightInfo[$j]['Log']['CHT1'];
-				$engineTemp[$index] = $flightInfo[$j]['Log']['RPM'];
+				$engineRPM[$index]  = $flightInfo[$j]['Log']['RPM'];
+				$engineTemp[$index] = $flightInfo[$j]['Log']['CHT1'];
 				$tracking[$index]   = $flightInfo[$j]['Log']['TRK'];
 				$timestamp[$index]  = $flightInfo[$j]['Log']['Time'];
 				if($flightInfo[$j]['Log']['Latitude'] < $minLat){
@@ -143,7 +143,7 @@ class Flight extends AppModel {
 			}
 			$flightInfo = $log->find('all', array(
 				'conditions' => array('Log.flight_id' => $flight_id),
-				'fields' => array('Log.Latitude', 'Log.Longitude', 'Log.AltMSL', 'Log.IAS', 'CHT1', 'RPM','TRK','Time', 'AltGPS','Pitch', 'Roll'),
+				'fields' => array('Log.Latitude', 'Log.Longitude', 'Log.AltMSL', 'Log.IAS', 'RPM', 'CHT1','TRK','Time', 'AltGPS','Pitch', 'Roll'),
 				'limit' => 500,
 				'page' => $pageNum));
 			$pageNum++;

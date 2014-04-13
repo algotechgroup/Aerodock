@@ -108,7 +108,7 @@ class UsersController extends AppController {
       $this->User->set('lastname', $this->request->data['User']['lastname']);
 
       if ($this->User->save()) {
-          $this->Session->setFlash('The changes has been saved','success');
+          $this->Session->setFlash('The change has been saved','success');
           return $this->redirect(array('controller' => 'flights', 'action' => 'index'));
       }
       $this->Session->setFlash('The user could not be saved. Please, try again.','fail');
