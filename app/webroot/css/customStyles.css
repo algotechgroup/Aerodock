@@ -58,7 +58,11 @@ a.navbar-brandCUSTOM
 	color: #FFF;
 	text-decoration: none;
 }
-
+a.navbar-brandCUSTOM:hover
+{
+	color: #FFF;
+	text-decoration: none;
+}
 .btnCUSTOM
 {
 	color: #fff;

@@ -7,25 +7,54 @@ class FlightsController extends AppController {
 	    parent::beforeFilter();
 	}
 
-	public function index(){
+	public function index($page = null, $sort = null, $dir = null, $studentid = null){
+
+		if($page == null){
+			$page = 1;
+		}
+		if($sort == null){
+			$sort = "date";
+		}
+		if($dir == null){
+			$dir = "desc";
+		}
+		$dirArray = array("studentid" => "desc", 
+								 "instructorID" => "desc",
+								 "tailNo" => "desc", 
+								 "date" => "desc", 
+								 "duration" => "desc");
+		if($dir == "desc"){
+			$dirArray[$sort] = "asc";
+		}
+		$this->set('dir', $dir);
+		$this->set('dirArray', $dirArray);
+		$this->set('page', $page);
+		$this->set('sort', $sort);
 		$user = $this->Auth->user();
 		if($user['type'] != 'student'){
-			$this->set('flights', $this->Flight->find('all', array(
-        			'order' => 'Date DESC')));
-		} else {
-			$this->set('flights',
-				$this->Flight->findAllByStudentid($this->Auth->user('username')));
+			if($studentid == null){
+
+				$this->set('username', "");
+				$this->set('count', ceil($this->Flight->find('count')/10));
+				$this->set('flights', $this->Flight->find('all', array(
+	        								'order' => array($sort => $dir),
+	        								'limit' => 10,
+	        								'page' => $page)));
+			} else {
+				$this->set('username', $studentid);
+				$this->set('count', ceil($this->Flight->find('count',
+																			array('conditions' => 
+																				array('studentid' => $studentid)))/10));
+				$this->set('flights', $this->Flight->find('all', array(
+													'conditions' =>	array('studentid' => $studentid),
+	        								'order' => array($sort => $dir),
+	        								'limit' => 10,
+	        								'page' => $page)));
+			}
 		}
 	}
+		
 	
-  	public function sort($sortField){
-     		if ($sortField == "Student")
-        		$this->set('flights', $this->Flight->find('all', array('order' => array('studentid ASC', 'date DESC'))));
-     		else if ($sortField == "Instructor")
-        		$this->set('flights', $this->Flight->find('all', array('order' => array('instructorID ASC', 'date DESC'))));
-     		else if ($sortField == "Tail No")
-        		$this->set('flights', $this->Flight->find('all', array('order' => array('TailNo ASC', 'date DESC'))));
-     	}
   
 	public function add(){
 		ClassRegistry::init('User');
@@ -108,17 +137,24 @@ class FlightsController extends AppController {
 					array('controller' => 'flights', 'action' => 'index'));
 		}
 
+		ClassRegistry::init('User');
+		$user = new User();
+		$user = $user->findByUsername($flight['Flight']['studentid']);
+		$this->set('hasPassword', $user['User']['password'] != "");
+		if($user['User']['firstname'] == ""){
+			$this->set('title', "New flight");
+		} else {
+			$this->set('title', (($user['User']['firstname']."'s " . date('M d', strtotime($flight['Flight']['date'])). " flight")));
+		}
 		$this->set('flight', $flight);
 		$flightInfo = $this->Flight->getLatLong($flight['Flight']['id']);
-		$this->set('jslatlng', 'Flightjs'.DS.'latlong' . $flight['Flight']['id']);
-		$this->set('center', array_shift($flightInfo));
 		$this->set('zoomLevel', array_shift($flightInfo));
-		$this->set('endSlice', array_shift($flightInfo));
-		$this->set('events',  $this->Flight->events($id)[0]);
-		$this->Session->write('events', $this->Flight->events($id)[1]);
+		$events = $this->Flight->events($id);
+		$this->set('events',  $events[0]);
+		$this->Session->write('events', $events[1]);
 
 	}
-
+	/*
 	public function maintenance(){
 		if($this->Auth->user('type') != 'maint' && $this->Auth->user('type') != 'admin'){
 			$this->Session->setFlash('Not authorized to view maintenance logs.','fail');
@@ -128,7 +164,7 @@ class FlightsController extends AppController {
 		$this->set('flights',
 			 $this->Flight->find('all', array('conditions' => array('maintenance' => 1), 
 			 	'order' => 'Date DESC')));
-	}
+	}*/
 
 	public function getData(){
 		$this->autoRender = false;
@@ -164,6 +200,52 @@ class FlightsController extends AppController {
 					array('controller' => 'flights', 'action' => 'index'));
 		}
 		return $this->Flight->generateCoords($this->request->data);
+	}
+
+	public function changePassword(){
+		$this->autoRender = false;
+		$this->layout = 'ajax';
+    App::uses('SimplePasswordHasher', 'Controller/Component/Auth');
+		ClassRegistry::init('User');
+		$user = new User();
+		if(!($this->Auth->user('type') == 'student')){
+			$toUpdate = $user->findByUsername($this->request->data['studentid'])['User'];
+			$passwordHasher = new SimplePasswordHasher();
+			$toUpdate['password'] = $passwordHasher->hash($this->request->data['password']);
+			$toUpdate['firstname'] = $this->request->data['firstname'];
+			$toUpdate['lastname'] = $this->request->data['lastname'];
+			$user->save($toUpdate);
+			return 1;
+		} else {
+			return 0;
+		}
+	}
+
+	public function purge(){
+		$this->Auth->user();
+		if($this->Auth->user('type') != 'admin'){
+			$this->Session->setFlash('Not authorized to purge flights.','fail');
+			return $this->redirect(
+					array('controller' => 'flights', 'action' => 'index'));
+		}
+		$currentYear = date("Y");
+		$completed = true;
+		for ($i=$currentYear-1; $i >= 2013; $i--) { 
+			$flightsToDelete = $this->Flight->find('all', array(
+																				'conditions' => array('date LIKE' => ($i."%"))));
+			if(count($flightsToDelete) > 0){
+				for($i = 0; $i < count($flightsToDelete); $i++){
+					$completed &= $this->Flight->delete($flightsToDelete[$i]['Flight']['id']);
+				}
+			}
+		}
+		if($completed){
+			$this->Session->setFlash('All flights from '.($currentYear-1).' and before have been successfully deleted','success');
+		} else {
+			$this->Session->setFlash('One or more flights were not deleted successfully','fail');
+		}
+		return $this->redirect(
+					array('controller' => 'flights', 'action' => 'index'));
 	}
 	public function isAuthorized($user) {
 	    // Admin can access every action

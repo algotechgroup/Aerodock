@@ -71,9 +71,8 @@ class Flight extends AppModel {
 										'long' => ($minMaxes['maxLong'] + $minMaxes['minLong'])/2);
 		
 		$zoomLevel = $this->calculateZoom($minMaxes);
-		return array('center' => $center,
-								 'zoomLevel' => $zoomLevel,
-								 'endSlice' => $endSlice);
+		return array('zoomLevel' => $zoomLevel,
+								 );
 
 	}
 
@@ -94,7 +93,7 @@ class Flight extends AppModel {
 		$pageNum = 1;
 		$flightInfo = $log->find('all', array(
 			'conditions' => array('Log.flight_id' => $data['flightid']),
-			'fields' => array('Latitude', 'Longitude', 'AltGPS', 'TRK', 'Roll'),
+			'fields' => array('Latitude', 'Longitude'),
 			'limit' => 500,
 			'pageNum' => $pageNum));
 		$index = 1;
@@ -113,7 +112,7 @@ class Flight extends AppModel {
 			$pageNum++;
 			$flightInfo = $log->find('all', array(
 				'conditions' => array('Log.flight_id' => $data['flightid']),
-				'fields' => array('Latitude', 'Longitude'),
+				'fields' => array('Latitude', 'Longitude',),
 				'limit' => 500,
 				'page' => $pageNum));
 			
@@ -126,11 +125,7 @@ class Flight extends AppModel {
 	function generateJsArray($data){
 
 		$columns = array('Time');
-		$numGraphs = 0;
-		if(!($data['altOn']    == 'true' || $data['engineOn'] == 'true' || $data['oilOn']    == 'true' ||
-				$data['rpmOn']    == 'true' || $data['fuelOn']   == 'true')){
-			return 'empty';
-		}
+		$numGraphs = 1;
 
 		if($data['altOn']    == 'true'){ 
 			$numGraphs += 2;
@@ -498,6 +493,38 @@ class Flight extends AppModel {
 		        }
 		    // *************************** end steep turn  *********************************
 		    }
+		    				//  ***********************   turns  ********************************
+				if ($cmprsdEvnts[$i]['name'] == 'L' || $cmprsdEvnts[$i]['name'] == 'R'
+						&& $cmprsdEvnts[$i]['rowEnd'] - $cmprsdEvnts[$i]['rowBegin'] > 10)
+				{
+					$total = 0;
+					for ($j = $cmprsdEvnts[$i]['rowBegin']-1; $j < $cmprsdEvnts[$i]['rowEnd']+1; $j++)
+					{
+						if ($cmprsdEvnts[$i]['name'] == 'L')
+					{
+						if (abs($data[$j]['Log']['TRK'] - $data[$j+1]['Log']['TRK']) > 300)
+						{
+							$total = $total + (($data[$j]['Log']['TRK'] + 360) - $data[$j+1]['Log']['TRK']);
+						}
+						else
+							$total = $total + ($data[$j]['Log']['TRK'] - $data[$j+1]['Log']['TRK']);
+					}
+
+					if ($cmprsdEvnts[$i]['name'] == 'R')
+					{
+						if (abs($data[$j]['Log']['TRK'] - $data[$j+1]['Log']['TRK']) > 300)
+						{
+							$total = $total + ($data[$j+1]['Log']['TRK'] - $data[$j]['Log']['TRK']+360);
+						}
+						else
+							$total = $total + ($data[$j+1]['Log']['TRK'] - $data[$j]['Log']['TRK']);
+					}
+			}
+			$string = $total."&deg; ".$cmprsdEvnts[$i]['name'].' turn';
+			$maneuvers[$manCtr] = $cmprsdEvnts[$i];
+			$maneuvers[$manCtr]['name'] = $string;
+			$manCtr++;
+		} //  ***********************  end turns  ********************************
 		}
 		$outputString = "[";
 		for ($i=0; $i < count($maneuvers); $i++) { 

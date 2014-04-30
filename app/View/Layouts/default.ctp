@@ -64,12 +64,12 @@
 		  																	array('controller' => 'users',
 		  																		'action' => 'index'));?></li>
 		  			<?php endif ?>
-		  			<?php if(AuthComponent::user('type') == 'maint' || 
+		  			<?php /* if(AuthComponent::user('type') == 'maint' || 
 		  								AuthComponent::user('type') == 'admin'):?>
 		          <li><?php echo $this->Html->link('Maintenance',
 		  																	array('controller' => 'flights',
 		  																		'action' => 'maintenance'));?></li>
-		  			<?php endif ?>
+		  			<?php endif */?>
 
 		        <li><?php echo $this->Html->link('Log out', 
 		        																	array('controller' => 'users',

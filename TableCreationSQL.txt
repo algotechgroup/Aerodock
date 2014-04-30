@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Apr 13, 2014 at 11:41 PM
+-- Generation Time: Apr 30, 2014 at 10:26 AM
 -- Server version: 5.5.33
 -- PHP Version: 5.5.3
 
@@ -82,18 +82,16 @@ CREATE TABLE `users` (
   `firstname` varchar(50) DEFAULT NULL,
   `lastname` varchar(50) DEFAULT NULL,
   `username` varchar(50) NOT NULL,
+  `password` varchar(40) NOT NULL,
   `type` varchar(50) DEFAULT NULL,
   `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `modified` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=5 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=17 ;
 
 --
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`id`, `firstname`, `lastname`, `username`, `type`, `created`, `modified`) VALUES
-(1, 'Maint Man', 'Mr. Fixer', 'maintenance', 'maint', '2014-04-06 18:28:15', '0000-00-00 00:00:00'),
-(2, 'Jon', 'Doe', 'student', 'student', '2014-04-06 18:28:37', '0000-00-00 00:00:00'),
-(3, 'Admin', 'Admin', 'admin', 'admin', '2014-04-06 18:28:50', '0000-00-00 00:00:00'),
-(4, 'Teach', 'Teacher', 'teacher', 'teacher', '2014-04-06 18:29:07', '0000-00-00 00:00:00');
+INSERT INTO `users` (`id`, `firstname`, `lastname`, `username`, `password`, `type`, `created`, `modified`) VALUES
+(3, 'Admin', 'Admin', 'admin', '7cd45e1d78200bc89fa899b46ae8c9395dd019fc', 'admin', '2014-04-06 18:28:50', '2014-04-30 15:26:08');

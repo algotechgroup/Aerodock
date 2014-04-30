@@ -65,17 +65,17 @@ class User extends AppModel {
     public function uploadUsers($uploadData){
 
         $handle = fopen($uploadData['tmp_name'], 'r');
-        $names = fgetcsv($handle);
-        $numUsers = count($names);
-        $data = array();
-        for($i = 0; $i < $numUsers; $i++)
-        {
-            
-                $row['firstname'] = "";
-                $row['lastname'] = "";
-                $row['username'] = trim(substr($names[$i], 0, strpos($names[$i], "@")));
-                $row['type'] = "student";
+        $i = 0;
+  
+        while($names = fgetcsv($handle)){
+            $row['firstname'] = "";
+            $row['lastname'] = "";
+            $row['username'] = trim(substr($names[0], 0, strpos($names[0], "@")));
+            $row['type'] = "student";
+            if($row['username'] != ""){
                 $data[$i] = $row;
+                $i++;
+            }
         }
         $this->saveMany($data);
         return true; 

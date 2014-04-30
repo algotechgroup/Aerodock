@@ -6,6 +6,7 @@
  * @package       app.View.Pages
  * @since         CakePHP(tm) v 0.10.0.1076
  */
+$this->set('title_for_layout', "Aerodock at MTSU");
 ?>
 
 
@@ -25,6 +26,6 @@
       <div class="row marketing">
         <div class="col-md-6">
           <h4>Logging in</h4>
-          <p>Aerodock requires the user to be enrolled in an MTSU Aerospace class to gain access. If you are a student, use your Pipeline ID and password to log in. If you are still unable to log in, contact your teacher to resolve the issue.</p>
+          <p>Aerodock requires the user to be enrolled in an MTSU Aerospace class to gain access. When your instructor uploads your first flight, you can begin logging in at home.</p>
         </div>
       </div>
